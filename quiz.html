@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDGs 퀴즈 게임</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa; /* 밝은 하늘색 배경 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* 세로 정렬 */
+            justify-content: center;
+            align-items: center;
+            color: #2c3e50;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #00796b;
+            margin-bottom: 25px;
+            font-size: 2.5em;
+        }
+
+        .card-area {
+            position: relative;
+            width: 250px; /* 카드 크기 */
+            height: 350px;
+            margin: 0 auto 30px;
+            perspective: 1000px; /* 3D 회전 효과 */
+        }
+
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* 뒷면이 보이지 않도록 숨김 */
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            background-color: #2ecc71; /* 앞면 기본색 (이미지로 덮어짐) */
+            transform: rotateY(0deg);
+        }
+
+        .card-back {
+            background-image: url('card_back.png'); /* 카드 뒷면 이미지 */
+            background-color: #34495e; /* 뒷면 기본색 */
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped .card-front {
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped .card-back {
+            transform: rotateY(360deg); /* 180도 회전한 상태에서 다시 180도 회전하여 앞면처럼 보이게 */
+        }
+
+        .card-content {
+            z-index: 2; /* 이미지 위에 텍스트가 오도록 */
+            background-color: rgba(0, 0, 0, 0.5); /* 텍스트 배경 반투명 */
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: auto; /* 하단 정렬 */
+            font-size: 0.8em;
+            word-break: keep-all; /* 단어 단위로 줄바꿈 */
+        }
+        
+        .card-front .card-name {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .question-area {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #34495e;
+            min-height: 40px; /* 문제 없을 때 공간 유지 */
+        }
+
+        #answer-input {
+            padding: 12px;
+            margin-top: 10px;
+            width: calc(100% - 24px);
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* 버튼 간격 */
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .btn-draw {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-draw:hover { background-color: #2980b9; transform: translateY(-2px); }
+
+        .btn-submit {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-submit:hover { background-color: #27ae60; transform: translateY(-2px); }
+
+        .btn-return {
+            background-color: #95a5a6;
+            color: white;
+            margin-top: 30px;
+        }
+        .btn-return:hover { background-color: #7f8c8d; transform: translateY(-2px); }
+
+        #game-message {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #e74c3c; /* 에러 메시지 색상 */
+            min-height: 25px; /* 메시지 없을 때 공간 유지 */
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>SDGs 퀴즈 게임</h1>
+        <div class="card-area">
+            <div id="card" class="card">
+                <div class="card-back"></div>
+                <div class="card-front"></div>
+            </div>
+        </div>
+
+        <div class="question-area" id="question-area">
+            퀴즈를 맞혀보세요!
+        </div>
+        <input type="text" id="answer-input" placeholder="정답을 입력">
+        <div class="button-group">
+            <button class="btn btn-draw" id="draw-button">퀴즈 뽑기</button>
+            <button class="btn btn-submit" id="submit-button">정답은?</button>
+        </div>
+        <div id="game-message"></div>
+    </div>
+
+    <a href="index.html" class="btn btn-return">홈으로</a>
+    <a href="card_collection.html" class="btn btn-return" style="margin-top:15px; background-color:#f39c12;">획득 카드 컬렉션 보기</a>
+
+    <script>
+        const allCards = [
+            { id: 1, name: "에너지 카드 ➊", question: "다양한 나라에서 탄소 배출을 줄이려고 ㅈㅅㅇㄴㅈ를 사용하고 있다.", answer: "재생에너지", image: "energy_1.jpg", collectionId: "quiz_card_1_1" },
+            { id: 2, name: "에너지 카드 ➋", question: "덴마크 전력의 최고 비중을 차지하는 것은? 1. 태양광 2. 풍력 3. 화력 4. 수력", answer: "2", image: "card_wind.jpg", collectionId: "quiz_card_1_2" },
+            { id: 3, name: "에너지 카드 ➌", question: "아이들이 공 놀이를 통해 소량의 전력을 생산하는 적정 기술은?", answer: "소켓볼", image: "card_hydro.jpg", collectionId: "quiz_card_1_3" },
+            { id: 4, name: "에너지 카드 ➍", question: "냉장고가 없어도 물의 증발을 이용해 오래 식품을 보관할 수 있는 적정 기술은?", answer: "항아리 냉장고", image: "card_geothermal.jpg", collectionId: "quiz_card_1_4" },
+            { id: 5, name: "에너지 카드 ➎", question: "개인이 더 나은 에너지를 위해 일상에서 할 수 있는 노력은? 1. 에너지 ODA 2. 에너지 효율 높은 기구 쓰기 3. 녹색기후기금 운영 4. 에너지자립마을 형성", answer: "2", image: "card_recycle.jpg", collectionId: "quiz_card_1_5" },
+            { id: 6, name: "건강웰빙 카드 ➊", question: "주사 놓기 전 제일 먼저 해야 할 일은? 1. 손씻기 2. 약 버리기 3. 바늘 구부리기", answer: "1", image: "healthwellbeing.jpg", collectionId: "quiz_card_1_6" },
+            { id: 7, name: "건강웰빙 카드 ➋", question: "간호사의 윤리적 책임으로 옳지 않은 것은? 1. 환자의 비밀을 지킨다. 2. 환자의 자율성을 존중한다. 3. 자신의 판단만으로 치료를 결정한다.", answer: "3", image: "card_electricity.jpg", collectionId: "quiz_card_1_7" },
+            { id: 8, name: "건강웰빙 카드 ➌", question: "활력징후(생명유지에 필수적인 신체 상태)에 해당하지 않는 것은? 1. 체온 2. 혈압 3. 혈액형", answer: "3", image: "card_bus.jpg", collectionId: "quiz_card_1_8" },
+            { id: 9, name: "건강웰빙 카드 ➍", question: "감염병 예방의 기본 습관은? 1. 스트레칭 2. 손 씻기 3. 낮잠 자기", answer: "2", image: "card_plant.jpg", collectionId: "quiz_card_1_9" },
+            { id: 10, name: "건강웰빙 카드 ➎", question: "(O/X)충분한 수분 섭취는 건강에 별로 중요치 않다.", answer: "X", image: "card_eco_product.jpg", collectionId: "quiz_card_1_10" },
+            { id: 11, name: "육상생태계 카드 ➊", question: "강이나 호수 같은 내륙 담수 생태계에 해당하는 곳은? 1.바다 2. 사막 3. 습지 4. 도시 공원", answer: "3", image: "card_vegetarian.jpg", collectionId: "quiz_card_1_11" },
+            { id: 12, name: "육상생태계 카드 ➋", question: "산림 파괴를 멈추고 지속 가능하게 관리해야 하는 가장 중요한 이유 중 하나는? 1. 숲이 사람들에게 목재를 공급하기 때문 2. 숲이 다양한 생물의 집이기 때문 3. 숲이 경치를 아름답게 하기 때문 4. 숲에서 맛있는 과일이 나기 때문", answer: "2", image: "card_efficiency.jpg", collectionId: "quiz_card_1_12" },
+            { id: 13, name: "육상생태계 카드 ➌", question: "땅이 황폐해져 사막처럼 변하는 현상을 막는 노력이 필요한 이유는? 1. 땅이 황폐해지면 건물을 짓기 어렵기 때문 2. 땅이 황폐해지면 식물이 잘 자라지 못해 식량 생산이 어려워지기 떄문 3. 땅이 황폐해지면 관광객이 잘 오지 않기 때문 4. 땅이 황폐해지면 지하수가 말라버리기 때문", answer: "2", image: "card_carbon.jpg", collectionId: "quiz_card_1_13" },
+            { id: 14, name: "육상생태계 카드 ➍", question: "생물 다양성이란 무엇을 의미할까? 1. 키가 큰 식물들이 많이 자라는 것 2. 한 지역에 사는 모든 동물들의 종류 3. 지구상의 모든 종류의 생물(동식물, 미생물 등)과 그들이 사는 환경까지 포함하는 것 4. 희귀한 동물들만 특별히 보호하는 것", answer: "3", image: "card_environment.jpg", collectionId: "quiz_card_1_14" },
+            { id: 15, name: "육상생태계 카드 ➎", question: "멸종 위기종과 같은 보호종을 밀렵하거나 불법으로 거래하는 행위를 막아야 하는 가장 큰 이유는? 1. 비싸게 팔 수 없도록 하기 위해서 2. 동물이 인간에게 해를 끼칠 수 있기 때문 3. 특정 생물종이 사라지면 생태계의 균형이 깨지고 생물 다양성이 줄어들기 때문 4. 동물을 키우는 것이 힘들기 때문", answer: "3", image: "card_healthy_food.jpg", collectionId: "quiz_card_1_15" },
+            { id: 16, name: "건강웰빙 카드 ➏", question: "WHO(세계보건기구)는 전통의학의 보건 체계 내 통합을 SDG 3의 일환으로 권장하고 있습니다. 이와 관련해 한의학이 특히 기여할 수 있는 분야는 무엇인가요? 1. 스마트 헬스케어 기술 개발 2. 만성질환의 예방과 생활습관 개선 3. 응급 수술 기술 개발 4. 바이러스 백신 생산", answer: "2", image: "card_exercise.jpg", collectionId: "quiz_card_1_16" },
+            { id: 17, name: "건강웰빙 카드 ➐", question: "다음 중 한의학에서 사용하는 ‘예방 중심’ 건강관리 방법으로, SDG 3의 “질병 예방” 목표에 부합하는 것은? 1. MRI 촬영 2. 침술, 뜸, 한약 처방 3. 항생제 처방 4. 병원 입원 치료", answer: "2", image: "card_stress.jpg", collectionId: "quiz_card_1_17" },
+            { id: 18, name: "건강웰빙 카드 ➑", question: "WHO는 2019년 전통의학의 세계보건체계 통합을 목표로 한 문서를 발간했습니다. 이 문서의 명칭은 무엇인가요? 1. Universal Health Plan 2. Traditional Medicine Strategy 3. World Wellness Agenda 4. Holistic Healing Report", answer: "2", image: "card_sleep.jpg", collectionId: "quiz_card_1_18" },
+            { id: 19, name: "건강웰빙 카드 ➒", question: "SDG 3은 건강 형평성도 중요시합니다. 한의학이 이 목표에 기여할 수 있는 방식으로 옳은 것은? 1. 고가의 특수 치료만 제공한다 2. 특정 부유층만을 위한 서비스다 3. 지역사회 기반 저비용 치료를 제공한다 4. 병원 진료가 불가능한 사람은 치료 대상이 아니다", answer: "3", image: "card_nosmoking.jpg", collectionId: "quiz_card_1_19" },
+            { id: 20, name: "건강웰빙 카드 ➓", question: "5. 한의학에서 중요하게 여기는 ‘조화’와 ‘균형’의 개념은 SDG 3의 어떤 핵심 가치와 가장 유사한가요? 1. 경쟁 2. 수익 중심 3. 전인적 웰빙과 삶의 질 향상 4. 질병 중심 사고", answer: "3", image: "card_mental.jpg", collectionId: "quiz_card_1_20" }
+        ];
+
+        let currentCard = null; // 현재 뽑힌 카드 정보
+        let acquiredCards = {}; // 획득한 카드 목록 (collectionId: true/false)
+        let availableQuizCardIds = []; // 퀴즈용 카드 ID 목록 (quiz_card_1_1 ~ quiz_card_1_20)
+
+        const cardElement = document.getElementById('card');
+        const cardFront = cardElement.querySelector('.card-front');
+        const cardBack = cardElement.querySelector('.card-back');
+        const questionArea = document.getElementById('question-area');
+        const answerInput = document.getElementById('answer-input');
+        const drawButton = document.getElementById('draw-button');
+        const submitButton = document.getElementById('submit-button');
+        const gameMessage = document.getElementById('game-message');
+
+        // 로컬 스토리지에서 획득 카드 정보 불러오기
+        function loadAcquiredCards() {
+            const savedCards = localStorage.getItem('acquiredCards');
+            if (savedCards) {
+                acquiredCards = JSON.parse(savedCards);
+            } else {
+                acquiredCards = {};
+            }
+            updateAvailableQuizCards(); // 불러온 후 남은 퀴즈 카드 목록 업데이트
+        }
+
+        // 획득 카드 정보 로컬 스토리지에 저장
+        function saveAcquiredCards() {
+            localStorage.setItem('acquiredCards', JSON.stringify(acquiredCards));
+        }
+
+        // 아직 획득하지 않은 퀴즈 카드 목록 업데이트
+        function updateAvailableQuizCards() {
+            availableQuizCardIds = allCards.filter(card => !acquiredCards[card.collectionId]).map(card => card.id);
+            if (availableQuizCardIds.length === 0) {
+                drawButton.disabled = true;
+                gameMessage.textContent = "모든 퀴즈 카드를 획득했습니다! 대단해요!";
+                gameMessage.style.color = '#27ae60';
+            }
+        }
+
+        // 퀴즈 마스터 카드 획득 여부 업데이트
+        function updateQuizMasterCards() {
+            const numQuizCardsAcquired = allCards.filter(card => acquiredCards[card.collectionId]).length;
+
+            if (numQuizCardsAcquired >= 1) {
+                acquiredCards['quiz_card_1'] = true;
+            }
+            if (numQuizCardsAcquired >= 5) {
+                acquiredCards['quiz_card_2'] = true;
+            }
+            if (numQuizCardsAcquired >= 10) {
+                acquiredCards['quiz_card_3'] = true;
+            }
+            if (numQuizCardsAcquired >= 20) {
+                acquiredCards['quiz_card_4'] = true;
+            }
+            saveAcquiredCards();
+        }
+
+        // 메시지 표시 함수
+        function showMessage(msg, type = 'error') {
+            gameMessage.textContent = msg;
+            gameMessage.style.color = type === 'success' ? '#27ae60' : '#e74c3c';
+        }
+
+        // 카드 뽑기 함수
+        function drawCard() {
+            if (availableQuizCardIds.length === 0) {
+                showMessage("더 이상 뽑을 퀴즈 카드가 없습니다. 모든 퀴즈를 해결했어요!", 'success');
+                return;
+            }
+
+            // 카드 회전 애니메이션 초기화 (다시 뒷면 보이게)
+            cardElement.classList.remove('flipped');
+            cardFront.style.backgroundImage = 'none';
+            cardFront.innerHTML = '';
+            questionArea.textContent = '카드를 뽑는 중...';
+            answerInput.value = '';
+            answerInput.disabled = true;
+            submitButton.disabled = true;
+            drawButton.disabled = true;
+            showMessage(''); // 이전 메시지 지우기
+
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * availableQuizCardIds.length);
+                const currentCardId = availableQuizCardIds[randomIndex];
+                currentCard = allCards.find(card => card.id === currentCardId);
+
+                // 카드 앞면 내용 업데이트
+                cardFront.style.backgroundImage = `url('${currentCard.image}')`;
+                cardFront.innerHTML = `<span class="card-name">${currentCard.name}</span><div class="card-content">문제: ${currentCard.question}</div>`;
+
+                // 카드 뒤집기
+                cardElement.classList.add('flipped');
+
+                setTimeout(() => {
+                    questionArea.textContent = `문제: ${currentCard.question}`;
+                    answerInput.disabled = false;
+                    submitButton.disabled = false;
+                    drawButton.disabled = false; // 다시 뽑을 수 있게
+                }, 800); // 카드 뒤집히는 시간 고려
+            }, 500); // 카드 회전 전 잠시 대기
+        }
+
+        // 정답 확인 함수
+        function checkAnswer() {
+            if (!currentCard) {
+                showMessage("먼저 카드를 뽑아주세요!");
+                return;
+            }
+
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = currentCard.answer.trim();
+
+            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) { // 대소문자 구분 없이 비교
+                showMessage("정답! 카드 획득!", 'success');
+                
+                // 획득한 카드 목록에 추가 (collectionId 사용)
+                if (!acquiredCards[currentCard.collectionId]) {
+                    acquiredCards[currentCard.collectionId] = true;
+                    saveAcquiredCards();
+                    updateAvailableQuizCards(); // 남은 카드 목록 갱신
+                    updateQuizMasterCards(); // 퀴즈 마스터 카드 업데이트
+                }
+                
+                // 정답 처리 후 다음 카드 뽑을 준비
+                currentCard = null;
+                answerInput.value = '';
+                answerInput.disabled = true;
+                submitButton.disabled = true;
+            } else {
+                showMessage("오답! 다시 시도해 봅시다!");
+                answerInput.value = ''; // 오답 시 입력창 비우기
+            }
+        }
+
+        // 이벤트 리스너 연결
+        drawButton.addEventListener('click', drawCard);
+        submitButton.addEventListener('click', checkAnswer);
+        answerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 페이지 로드 시 초기화
+        loadAcquiredCards();
+        // 초기에는 정답 입력 비활성화
+        answerInput.disabled = true;
+        submitButton.disabled = true;
+    </script>
+</body>
+</html>

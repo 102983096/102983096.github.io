@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>환경 보호 체크리스트</title>
+    <style>
+        /* 기존 CSS는 그대로 여기에 붙여넣으세요 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            display: flex; /* body를 flex 컨테이너로 설정하여 자식 요소를 정렬합니다. */
+            justify-content: center; /* 가로 중앙 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+        }
+
+        .main-container {
+            display: flex; /* 주요 콘텐츠 영역을 Flexbox로 설정하여 2분할합니다. */
+            width: 90%; /* 전체 너비의 90% 사용 */
+            max-width: 1200px; /* 최대 너비 설정 */
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* 모서리 둥글게 처리된 부분 넘어가지 않도록 */
+            min-height: 80vh; /* 최소 높이 설정 */
+        }
+
+        .left-panel {
+            flex: 1; /* 남은 공간을 균등하게 차지하도록 설정 (1:1 비율) */
+            padding: 40px;
+            background-color: #e0f7fa; /* 왼쪽 패널 배경색 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #004d40;
+        }
+
+        .left-panel h2 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #00796b;
+        }
+
+        .left-panel p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .right-panel {
+            flex: 1; /* 남은 공간을 균등하게 차지하도록 설정 (1:1 비율) */
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+        }
+
+        .checklist-container {
+            width: 100%; /* 오른쪽 패널 내에서 100% 너비 */
+            text-align: left;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        .checklist input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: #27ae60;
+            cursor: pointer;
+        }
+
+        .checklist label {
+            font-size: 1.1em;
+            color: #34495e;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .checklist input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+
+        /* 메시지 표시 영역 스타일 */
+        #message-display {
+            margin-top: 30px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+            background-color: #f8d7da; /* 기본 에러/주의 메시지 배경색 */
+            color: #721c24; /* 기본 에러/주의 메시지 텍스트색 */
+            border: 1px solid #f5c6cb;
+            opacity: 0; /* 초기에는 숨김 */
+            visibility: hidden; /* 초기에는 숨김 */
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+            min-width: 250px; /* 메시지 박스 최소 너비 */
+        }
+
+        #message-display.card-acquired {
+    background-color: #cce5ff; /* 연한 파란색 */
+    color: #004085; /* 진한 파란색 */
+    border-color: #b8daff;
+}
+
+        #message-display.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #message-display.success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        #message-display.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
+
+        /* 메인 페이지로 돌아가는 버튼 */
+        .back-button {
+            display: inline-block; /* 인라인 블록으로 설정하여 텍스트처럼 정렬 가능 */
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 반응형 디자인을 위한 미디어 쿼리 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column; /* 화면이 작아지면 세로로 분할 */
+                width: 95%;
+                min-height: unset; /* 높이 제한 해제 */
+            }
+
+            .left-panel, .right-panel {
+                padding: 30px;
+                flex: none; /* 유연성 해제 */
+                width: 100%;
+            }
+
+            .left-panel {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* 세로 분할 시 구분선 추가 */
+                border-radius: 10px 10px 0 0; /* 위쪽만 둥글게 */
+            }
+
+            .right-panel {
+                border-radius: 0 0 10px 10px; /* 아래쪽만 둥글게 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="left-panel">
+            <h2>육상생태계 연구소</h2>
+            <p>
+                15 육상 생태계
+            <p>
+                지구의 생명, 소중한 육상 생태계를 위해
+            </p>
+        </div>
+
+        <div class="right-panel">
+            <div class="checklist-container">
+                <h1>나의 환경생태(육상생태계) SDGs 실천 목록</h1>
+                <ul class="checklist">
+                    <li>
+                        <input type="checkbox" id="environment_item1">
+                        <label for="environment_item1">지역 자연 보호구역이나 생태공원 등을 자주 방문하고 보호의 중요성을 알린다.</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="environment_item2">
+                        <label for="environment_item2">휴지, 화장지, 종이제품은 FSC 인증 등 친환경 제품을 선택한다.</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="environment_item3">
+                        <label for="environment_item3">일회용품 사용을 줄이고 다회용 제품(텀블러, 장바구니 등)을 사용한다.</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="environment_item4">
+                        <label for="environment_item4">세제, 샴푸, 비누 등은 생분해성 친환경 제품을 선택한다.</label>
+                    </li>
+                    <li>
+                        <input type="checkbox" id="environment_item5">
+                        <label for="environment_item5">지역에서 생산된 제철 식재료를 구매한다.</label>
+                    </li>
+                </ul>
+            </div>
+            
+            <div id="message-display"></div>
+
+            <a href="index.html" class="back-button">홈으로</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+            const messageDisplay = document.getElementById('message-display');
+            const checklistId = 'environmentChecklistItems'; // 이 페이지의 고유 ID
+
+            function loadChecklistState() {
+                const savedState = localStorage.getItem(checklistId);
+                if (savedState) {
+                    const parsedState = JSON.parse(savedState);
+                    checkboxes.forEach(checkbox => {
+                        if (parsedState[checkbox.id]) {
+                            checkbox.checked = true;
+                            updateLabelStyle(checkbox);
+                        }
+                    });
+                }
+                updateMessage();
+            }
+
+            function saveChecklistState() {
+                const currentState = {};
+                checkboxes.forEach(checkbox => {
+                    currentState[checkbox.id] = checkbox.checked;
+                });
+                localStorage.setItem(checklistId, JSON.stringify(currentState));
+            }
+
+            function updateLabelStyle(checkbox) {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                if (label) {
+                    if (checkbox.checked) {
+                        label.style.textDecoration = 'line-through';
+                        label.style.color = '#7f8c8d';
+                    } else {
+                        label.style.textDecoration = 'none';
+                        label.style.color = '#34495e';
+                    }
+                }
+            }
+
+            // 카드 획득 함수: 새로 획득했으면 true, 이미 획득했으면 false 반환
+            function acquireCard(card_health_2) {
+                let acquiredCards = JSON.parse(localStorage.getItem('acquiredCards') || '{}');
+                if (!acquiredCards[card_health_2]) {
+                    acquiredCards[card_health_2] = true;
+                    localStorage.setItem('acquiredCards', JSON.stringify(acquiredCards));
+                    return true; 
+                }
+                return false; 
+            }
+
+            function updateMessage() {
+                const checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+                let messageText = '';
+                let messageType = '';
+                let cardAcquiredMessage = '';
+
+                // 카드 획득 로직
+                if (checkedCount >= 5 && acquireCard('card_environment_5')) {
+                    cardAcquiredMessage = '체크리스트 달성 카드 획득!';
+                    messageType = 'card-acquired'; 
+                }
+
+                // 기존 메시지 로직 (카드 획득 메시지가 우선적으로 표시)
+                if (cardAcquiredMessage) {
+                    // 카드 획득 메시지가 있으면 해당 메시지를 사용
+                } else if (checkedCount === 0) {
+                    messageText = '체크리스트를 작성해 봅시다!';
+                    messageType = 'default';
+                } else if (checkedCount === 1) {
+                    messageText = '첫 걸음을 내딛어 봅시다!';
+                    messageType = 'default';
+                } else if (checkedCount >= 2 && checkedCount < 5) {
+                    messageText = `벌써 ${checkedCount}가지를 실천했어요!`;
+                    messageType = 'warning';
+                } else if (checkedCount >= 5 && checkedCount < checkboxes.length) {
+                    messageText = `대단합니다! ${checkedCount}가지 목표 달성! 거의 다 왔어요!`;
+                    messageType = 'success';
+                } else if (checkedCount === checkboxes.length) {
+                    messageText = '축하합니다! 모든 목표 달성!';
+                    messageType = 'success';
+                }
+                
+                // 메시지 최종 조합 및 표시
+                messageDisplay.textContent = cardAcquiredMessage ? `${cardAcquiredMessage} ${messageText}` : messageText;
+                messageDisplay.className = ''; // 기존 클래스 제거
+                messageDisplay.classList.add('show');
+                if (messageType !== 'default') {
+                    messageDisplay.classList.add(messageType);
+                }
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    saveChecklistState();
+                    updateLabelStyle(this);
+                    updateMessage();
+                });
+            });
+
+            loadChecklistState();
+        });
+    </script>
+</body>
+</html>

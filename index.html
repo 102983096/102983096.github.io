@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지속가능 연구소</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            min-height: 100vh; /* 뷰포트 높이만큼 body를 확장 */
+            display: flex;
+            flex-direction: column; /* 자식 요소를 세로로 정렬 (상단/하단 분할) */
+        }
+
+        /* 상단 영역 스타일 */
+        .top-section {
+            flex: 3; /* 상단 영역이 하단 영역보다 더 많은 공간을 차지하도록 (예: 3:1 비율) */
+            display: flex;
+            justify-content: center; /* 가로 중앙 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+            position: relative; /* 내부 absolute 요소의 기준 */
+            padding: 20px; /* 여백 추가 */
+            box-sizing: border-box; /* 패딩 포함 */
+        }
+
+        /* 하단 영역 스타일 */
+        .bottom-section {
+            flex: 1; /* 하단 영역 */
+            display: flex;
+            justify-content: center; /* 가로 중앙 정렬 */
+            align-items: center; /* 세로 중앙 정렬 */
+            background-color: #e0f7fa; /* 하단 영역 배경색 */
+            padding: 20px; /* 여백 추가 */
+            box-sizing: border-box; /* 패딩 포함 */
+            gap: 30px; /* 버튼 간 간격 */
+            flex-wrap: wrap; /* 버튼이 너무 많으면 줄바꿈 */
+        }
+
+        .image-button {
+            position: absolute; /* 기존 이미지 버튼의 위치는 절대값으로 유지 */
+            width: 360px; /* 이미지 너비 */
+            height: 240px; /* 이미지 높이 */
+            transition: transform 0.2s, box-shadow 0.2s; /* 호버 효과를 위한 전환 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+            border-radius: 8px; /* 둥근 모서리 */
+            overflow: hidden; /* 이미지가 밖으로 나가지 않게 */
+        }
+
+        .image-button:hover {
+            transform: scale(1.05); /* 호버 시 약간 확대 */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 호버 시 그림자 강화 */
+        }
+
+        .image-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 이미지가 잘리지 않고 채워지도록 */
+            display: block; /* 이미지 하단 여백 제거 */
+            border-radius: 8px; /* 이미지 자체에도 둥근 모서리 적용 */
+        }
+
+        /* 텍스트 오버레이 (선택 사항: 이미지만 원하면 제거) */
+        .image-button .button-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 0;
+            background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            box-sizing: border-box;
+            opacity: 0; /* 기본적으로 숨김 */
+            transition: opacity 0.3s ease;
+        }
+
+        .image-button:hover .button-text {
+            opacity: 1; /* 호버 시 나타남 */
+        }
+
+
+        /* 왼쪽 위 */
+        #top-left {
+            top: 120px;
+            left: 120px;
+        }
+
+        /* 왼쪽 아래 */
+        #bottom-left {
+            bottom: 120px;
+            left: 120px;
+        }
+
+        /* 오른쪽 위 */
+        #top-right {
+            top: 120px;
+            right: 120px;
+        }
+
+        /* 오른쪽 아래 */
+        #bottom-right {
+            bottom: 120px;
+            right: 120px;
+        }
+
+        /* 새로 추가될 하단 버튼 스타일 */
+        .bottom-button {
+            display: inline-block;
+            padding: 18px 35px; /* 패딩 증가 */
+            font-size: 1.3em; /* 폰트 크기 증가 */
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background-color: #3498db; /* 기본 파란색 */
+            border-radius: 10px; /* 둥근 모서리 */
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            min-width: 220px; /* 최소 너비 설정 */
+            text-align: center;
+        }
+
+        .bottom-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px); /* 호버 시 약간 위로 이동 */
+        }
+
+        .bottom-button.quiz {
+            background-color: #ffc66b; /* 주황색 */
+        }
+        .bottom-button.quiz:hover {
+            background-color: #ff9b43;
+        }
+
+        .bottom-button.collection {
+            background-color: #ffa399; /* 빨간색 */
+        }
+        .bottom-button.collection:hover {
+            background-color: #ff8173;
+        }
+
+        /* New intro button styles */
+        .bottom-button.intro0 {
+            background-color: #aaffaa; /* Green */
+        }
+        .bottom-button.intro0:hover {
+            background-color: #9fff45;
+        }
+
+        .bottom-button.intro1 {
+            background-color: #faf6b0; /* Green */
+        }
+        .bottom-button.intro1:hover {
+            background-color: #fffc63;
+        }
+
+        .bottom-button.intro2 {
+            background-color: #c0f1ff; /* Green */
+        }
+        .bottom-button.intro2:hover {
+            background-color: #82daff;
+        }
+
+        .bottom-button.intro3 {
+            background-color: #bfffda; /* Green */
+        }
+        .bottom-button.intro3:hover {
+            background-color: #78ffb0;
+        }
+
+        .bottom-button.intro4 {
+            background-color: #abc7ff; /* Green */
+        }
+        .bottom-button.intro4:hover {
+            background-color: #548aff;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 1200px) {
+            .image-button {
+                width: 300px;
+                height: 200px;
+            }
+            #top-left { top: 80px; left: 80px; }
+            #bottom-left { bottom: 80px; left: 80px; }
+            #top-right { top: 80px; right: 80px; }
+            #bottom-right { bottom: 80px; right: 80px; }
+        }
+
+        @media (max-width: 768px) {
+            .top-section {
+                flex-direction: column; /* 모바일에서는 세로로 정렬 */
+                justify-content: flex-start; /* 상단에서부터 배치 */
+                align-items: center; /* 가운데 정렬 */
+                position: static; /* absolute 위치 해제 */
+                gap: 20px; /* 버튼 간 간격 */
+                padding-top: 40px; /* 상단 여백 */
+            }
+            .image-button {
+                position: static; /* absolute 위치 해제 */
+                width: 90%; /* 화면 너비에 맞춤 */
+                max-width: 300px; /* 최대 너비 제한 */
+                height: auto; /* 높이 자동 조절 */
+                aspect-ratio: 3/2; /* 너비:높이 비율 유지 */
+            }
+            /* 모바일에서 기존 id별 위치 오프셋 제거 */
+            #top-left, #bottom-left, #top-right, #bottom-right {
+                top: auto;
+                left: auto;
+                bottom: auto;
+                right: auto;
+            }
+            .bottom-section {
+                flex-direction: column; /* 버튼들을 세로로 정렬 */
+                gap: 15px; /* 버튼 간 간격 */
+            }
+            .bottom-button {
+                width: 90%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-section">
+        <a href="page1.html" class="image-button" id="top-left">
+            <img src="energy_button.jpg" alt="에너지 버튼">
+            <span class="button-text">에너지</span>
+        </a>
+
+        <a href="page2.html" class="image-button" id="bottom-left">
+            <img src="healthwellbeing1_button.jpg" alt="건강 1 버튼">
+            <span class="button-text">건강 1</span>
+        </a>
+
+        <a href="page3.html" class="image-button" id="top-right">
+            <img src="ground eco_button.jpg" alt="친환경 버튼">
+            <span class="button-text">친환경</span>
+        </a>
+
+        <a href="page4.html" class="image-button" id="bottom-right">
+            <img src="healthwellbeing2_button.jpg" alt="건강 2 버튼">
+            <span class="button-text">건강 2</span>
+        </a>
+    </div>
+
+    <div class="bottom-section">
+        <a href="quiz.html" class="bottom-button quiz">퀴즈 맞추기</a>
+        <a href="card_collection.html" class="bottom-button collection">수집한 카드</a>
+        <a href="intro0.html" class="bottom-button intro0">지속가능발전목표란?</a>
+        <a href="intro1.html" class="bottom-button intro1">에너지목표 소개</a>
+        <a href="intro2.html" class="bottom-button intro2">건강웰빙목표 소개1</a>
+        <a href="intro3.html" class="bottom-button intro3">육상생태계 목표 소개</a>
+        <a href="intro4.html" class="bottom-button intro4">건강웰빙목표 소개2</a>
+    </div>
+
+</body>
+</html>

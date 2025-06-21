@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 카드 컬렉션</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px; /* 전체 컨테이너 최대 너비 */
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        /* --- 이 부분이 중요! Grid 레이아웃 설정 --- */
+        .card-grid {
+            display: grid;
+            /* 가로 4개 칼럼을 만들고 각 칼럼이 동일한 너비를 가지도록 합니다. */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; /* 카드 사이의 간격 */
+            justify-content: center; /* 그리드 전체를 중앙 정렬 (flexbox 대신 grid에서 바로 작동) */
+            margin-top: 30px;
+            padding: 0 10px; /* 좌우 패딩을 줘서 너무 붙지 않게 */
+        }
+
+        .card {
+            background-color: #e0f7fa;
+            border: 2px solid #00796b;
+            border-radius: 10px;
+            padding: 10px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* 고정된 높이를 주거나, 내부 이미지에 따라 유동적으로 조절 */
+            min-height: 220px; 
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+            opacity: 0.2; /* Default: hidden/faded */
+            filter: grayscale(100%);
+            position: relative;
+            overflow: hidden; 
+            visibility: hidden; /* Initially hidden */
+        }
+
+        .card.unlocked {
+            opacity: 1; 
+            filter: grayscale(0%);
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            visibility: visible; /* Show when unlocked */
+        }
+
+        .card-image {
+    width: 100%; /* 카드 너비에 꽉 차도록 */
+    height: auto; /* 핵심: 높이를 'auto'로 설정하여 원본 비율 유지 */
+    /* object-fit: cover; 또는 contain; 을 필요에 따라 사용. 'cover'는 잘릴 수 있고, 'contain'은 공간에 맞춤. */
+    /* 현재는 'height: auto;'로 인해 'object-fit'이 필요 없을 수 있음. */
+    object-fit: contain; /* 이미지가 잘리지 않고 전체가 보이도록 (필요시) */
+    max-height: 150px; /* (선택 사항) 너무 커지는 것을 방지하기 위해 최대 높이 설정 */
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+}
+
+        .card h3 {
+            color: #004d40;
+            margin-bottom: 5px; 
+            font-size: 1.2em;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            width: 100%; 
+        }
+
+        .card p {
+            color: #333;
+            font-size: 0.85em; 
+            line-height: 1.3;
+            margin-bottom: 0;
+            flex-grow: 1; /* 남은 공간을 채워서 텍스트가 아래로 밀착되도록 */
+        }
+
+        .card .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ffb300;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: none;
+            z-index: 10;
+        }
+        
+        .card.unlocked .badge {
+            display: block; 
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* 반응형 디자인: 화면 너비가 작아지면 카드 개수 조절 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr); /* 768px 이하에서는 가로 2개 */
+                gap: 15px;
+            }
+            .card {
+                min-height: 180px;
+            }
+            .card-image {
+                height: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-grid {
+                grid-template-columns: repeat(1, 1fr); /* 480px 이하에서는 가로 1개 */
+                gap: 10px;
+            }
+            .card {
+                min-height: 160px;
+            }
+            .card-image {
+                height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>나의 SDGs 카드 수집 목록</h1>
+        <p>퀴즈와 체크리스트를 달성하고 멋진 카드를 모아보세요!</p>
+
+        <div class="card-grid" id="cardCollection">
+            
+            <div class="card" id="quiz_card_1_1">
+                <img src="energy1.jpg" alt="에너지 카드 ➊" class="card-image">
+                <h3>에너지 카드 ➊</h3>
+                <p>지속가능한 에너지 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_2">
+                <img src="energy2.jpg" alt="에너지 카드 ➋" class="card-image">
+                <h3>에너지 카드 ➋</h3>
+                <p>에너지 믹스 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_3">
+                <img src="energy3.jpg" alt="에너지 카드 ➌" class="card-image">
+                <h3>에너지 카드 ➌</h3>
+                <p>적정 기술, 소켓볼 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_4">
+                <img src="energy4.jpg" alt="에너지 카드 ➍" class="card-image">
+                <h3>에너지 카드 ➍</h3>
+                <p>적정 기술, 항아리 냉장고 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_5">
+                <img src="energy5.jpg" alt="에너지 카드 ➎" class="card-image">
+                <h3>에너지 카드 ➎</h3>
+                <p>개인의 에너지 노력 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_6">
+                <img src="health1.jpg" alt="건강웰빙 카드 ➊" class="card-image">
+                <h3>건강웰빙 카드 ➊</h3>
+                <p>간호사의 기본 수칙 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_7">
+                <img src="health2.jpg" alt="건강웰빙 카드 ➋" class="card-image">
+                <h3>건강웰빙 카드 ➋</h3>
+                <p>간호 윤리적 책임 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_8">
+                <img src="health3.jpg" alt="건강웰빙 카드 ➌" class="card-image">
+                <h3>건강웰빙 카드 ➌</h3>
+                <p>활력 징후 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_9">
+                <img src="health4.jpg" alt="건강웰빙 카드 ➍" class="card-image">
+                <h3>건강웰빙 카드 ➍</h3>
+                <p>감염병 예방 습관 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_10">
+                <img src="health5.jpg" alt="건강웰빙 카드 ➎" class="card-image">
+                <h3>건강웰빙 카드 ➎</h3>
+                <p>수분 섭취의 중요성 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_11">
+                <img src="groundeco1.jpg" alt="육상생태계 카드 ➊" class="card-image">
+                <h3>육상생태계 카드 ➊</h3>
+                <p>내륙 담수 생태계 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_12">
+                <img src="groundeco2.jpg" alt="육상생태계 카드 ➋" class="card-image">
+                <h3>육상생태계 카드 ➋</h3>
+                <p>산림 보호의 중요성 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_13">
+                <img src="groundeco1.jpg" alt="육상생태계 카드 ➌" class="card-image">
+                <h3>육상생태계 카드 ➌</h3>
+                <p>사막화 방지 노력 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_14">
+                <img src="groundeco2.jpg" alt="육상생태계 카드 ➍" class="card-image">
+                <h3>육상생태계 카드 ➍</h3>
+                <p>생물 다양성 개념 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_15">
+                <img src="groundeco5.jpg" alt="육상생태계 카드 ➎" class="card-image">
+                <h3>육상생태계 카드 ➎</h3>
+                <p>멸종 위기종 보호 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_16">
+                <img src="health_1.jpg" alt="건강웰빙 카드 ➏" class="card-image">
+                <h3>건강웰빙 카드 ➏</h3>
+                <p>한의학과 SDG 3 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_17">
+                <img src="health_2.jpg" alt="건강웰빙 카드 ➐" class="card-image">
+                <h3>건강웰빙 카드 ➐</h3>
+                <p>한의학 예방 중심 관리 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_18">
+                <img src="health_3.jpg" alt="건강웰빙 카드 ➑" class="card-image">
+                <h3>건강웰빙 카드 ➑</h3>
+                <p>WHO 전통의학 문서 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_19">
+                <img src="health_4.jpg" alt="건강웰빙 카드 ➒" class="card-image">
+                <h3>건강웰빙 카드 ➒</h3>
+                <p>한의학의 건강 형평성 기여 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+            <div class="card" id="quiz_card_1_20">
+                <img src="health_5.jpg" alt="건강웰빙 카드 ➓" class="card-image">
+                <h3>건강웰빙 카드 ➓</h3>
+                <p>한의학의 조화/균형 개념 지식 카드!</p>
+                <div class="badge">획득!</div>
+            </div>
+
+            <div class="card" id="card_energy_5">
+                <img src="emblem_moon1.jpg" alt="에너지 지킴이 카드" class="card-image">
+                <h3>체크리스트 달성!</h3>
+                <p>더 나은 에너지 5개 항목 실천!</p>
+                <div class="badge">획득!</div>
+            </div>
+
+            <div class="card" id="card_health_5">
+                <img src="emblem_moon2.jpg" alt="활력 넘침 카드" class="card-image">
+                <h3>체크리스트 달성!</h3>
+                <p>건강웰빙 (1) 5개 항목 실천!</p>
+                <div class="badge">획득!</div>
+            </div>
+
+            <div class="card" id="card_environment_5">
+                <img src="emblem_star1.png" alt="지구의 친구 카드" class="card-image">
+                <h3>체크리스트 달성!</h3>
+                <p>육상생태계 보호 5개 항목 실천!</p>
+                <div class="badge">획득!</div>
+            </div>
+
+            <div class="card" id="card_ethical_5">
+                <img src="emblem_star2.png" alt="윤리적 리더 카드" class="card-image">
+                <h3>체크리스트 달성!</h3>
+                <p>건강웰빙 (2) 5개 항목 실천!</p>
+                <div class="badge">획득!</div>
+            </div>
+            
+        </div>
+
+        <a href="index.html" class="back-button">홈으로</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateCardDisplay() {
+                // localStorage에서 획득한 카드 목록을 가져옵니다.
+                const acquiredCards = JSON.parse(localStorage.getItem('acquiredCards') || '{}');
+                
+                // 모든 카드 요소에 대해 반복합니다.
+                const allCardElements = document.querySelectorAll('.card');
+                allCardElements.forEach(cardElement => {
+                    const cardId = cardElement.id;
+                    // 만약 해당 카드가 acquiredCards 객체에 있고 값이 true이면 'unlocked' 클래스를 추가합니다.
+                    if (acquiredCards[cardId]) {
+                        cardElement.classList.add('unlocked');
+                    }
+                });
+            }
+
+            // 페이지 로드 시 카드 상태 업데이트
+            updateCardDisplay();
+        });
+    </script>
+</body>
+</html>
